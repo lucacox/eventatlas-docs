@@ -44,6 +44,20 @@ core model remains independent of any messaging provider.
 
 - [ADR template](adrs/adr_template.md) defines the format used to record
   architectural decisions.
+- [ADR-0001: Use Go for the Backend](adrs/0001-use-go-for-backend.md)
+  describes the decision to use Go for the backend and first-party collectors.
+- [ADR-0002: Use React and TypeScript](adrs/0002-use-react-for-frontend.md)
+  defines the frontend platform and defers the graph renderer to a spike.
+- [ADR-0003: Use a Provider-Neutral Domain Model](adrs/0003-use-provider-neutral-domain-model.md)
+  keeps provider-native concepts behind normalization boundaries.
+- [ADR-0004: Use PostgreSQL](adrs/0004-use-postgresql-for-persistence.md)
+  selects the initial durable persistence layer.
+- [ADR-0005](adrs/0005-separate-declared-and-observed-topology.md)
+  separates declared topology from observed topology evidence.
+- [ADR-0006](adrs/0006-treat-opentelemetry-as-observation-source.md)
+  treats OpenTelemetry as an observation source, not a broker provider.
+- [ADR-0007](adrs/0007-start-with-single-backend-process.md)
+  starts the backend as one process with explicit internal boundaries.
 
 The initial ADR set will document the backend and frontend stacks, the
 provider-neutral model, persistence, topology evidence, OpenTelemetry's role,
