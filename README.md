@@ -1,2 +1,83 @@
-# eventatlas-docs
-EventAtlas documentation
+---
+post_title: EventAtlas Documentation
+author1: Luca Cossaro
+post_slug: eventatlas-documentation
+featured_image: ""
+categories:
+  - architecture
+tags:
+  - eventatlas
+  - documentation
+ai_note: AI-assisted and reviewed by Luca Cossaro.
+summary: Architecture and development documentation for EventAtlas.
+post_date: 2026-08-16
+---
+
+# EventAtlas Documentation
+
+**EventAtlas — Discover and visualize your event-driven topology.**
+
+This repository contains cross-project architecture, decision records,
+integration guides, and development documentation for EventAtlas.
+
+EventAtlas discovers and visualizes event-driven systems by combining topology
+declared by messaging infrastructure with runtime behavior observed through
+application telemetry. NATS and JetStream are the first integration, while the
+core model remains independent of any messaging provider.
+
+## Project Principles
+
+- Model event-driven topology using vendor-neutral concepts.
+- Keep declared infrastructure separate from observed application behavior.
+- Preserve provider-specific details without promoting them into the core.
+- Start with one Go process, one PostgreSQL database, and one React SPA.
+- Introduce operational complexity only when product requirements justify it.
+
+## Documentation
+
+### Architecture
+
+- [Domain model](architecture/domain-model.md) defines the core entities,
+  relationships, evidence, snapshots, and provider boundaries.
+
+### Architecture Decision Records
+
+- [ADR template](adrs/adr_template.md) defines the format used to record
+  architectural decisions.
+
+The initial ADR set will document the backend and frontend stacks, the
+provider-neutral model, persistence, topology evidence, OpenTelemetry's role,
+and the single-process deployment strategy.
+
+## Planned Documentation
+
+Documentation will be added incrementally as the corresponding design or
+implementation work begins:
+
+- architecture overview and topology discovery;
+- telemetry and provider architecture;
+- NATS and JetStream integration;
+- OpenTelemetry integration;
+- local development, testing, and contribution guides.
+
+Planned documents are not placeholders for decisions. Each document should
+describe behavior that has been agreed upon or implemented.
+
+## Repository Map
+
+| Repository | Responsibility |
+| --- | --- |
+| [eventatlas](https://github.com/lucacox/eventatlas) | Backend, discovery, topology engine, storage, and API |
+| [eventatlas-web](https://github.com/lucacox/eventatlas-web) | Web application and graph visualization |
+| [eventatlas-deploy](https://github.com/lucacox/eventatlas-deploy) | Local environments, containers, and deployment assets |
+| [eventatlas-docs](https://github.com/lucacox/eventatlas-docs) | Cross-project architecture and documentation |
+
+## Project Status
+
+EventAtlas is in its initial architecture and domain-modeling phase. APIs,
+schemas, and deployment contracts are expected to evolve while the first
+vertical slice is implemented.
+
+## License
+
+See the [LICENSE](LICENSE) file for license information.
