@@ -1,0 +1,2 @@
+# eventatlas-docs
+EventAtlas documentation
