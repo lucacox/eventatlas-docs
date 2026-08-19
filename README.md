@@ -58,6 +58,8 @@ core model remains independent of any messaging provider.
   treats OpenTelemetry as an observation source, not a broker provider.
 - [ADR-0007](adrs/0007-start-with-single-backend-process.md)
   starts the backend as one process with explicit internal boundaries.
+- [ADR-0008](adrs/0008-use-huma-for-http-api.md)
+  selects Huma for the HTTP adapter, generated OpenAPI, and Swagger UI.
 
 The initial ADR set will document the backend and frontend stacks, the
 provider-neutral model, persistence, topology evidence, OpenTelemetry's role,
@@ -88,9 +90,9 @@ describe behavior that has been agreed upon or implemented.
 
 ## Project Status
 
-EventAtlas is in its initial architecture and domain-modeling phase. APIs,
-schemas, and deployment contracts are expected to evolve while the first
-vertical slice is implemented.
+EventAtlas has its first read-only backend vertical slice. APIs, schemas, and
+deployment contracts are expected to evolve while persistence and the web
+application are implemented.
 
 ## License
 
