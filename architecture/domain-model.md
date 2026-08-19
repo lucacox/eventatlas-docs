@@ -117,8 +117,7 @@ flowchart LR
 
     serviceA -. publishes .-> destination
     destination -->|captured by| resource
-    resource -->|has| consumer
-    consumer -->|filters| destination
+    resource -->|has consumer<br/>selector metadata| consumer
     consumer -. executed by .-> serviceB
 ```
 
@@ -216,6 +215,11 @@ provider-specific, so provider metadata records the native syntax. Core code
 must not assume that NATS wildcards, AMQP bindings, and Kafka subscriptions
 behave identically.
 
+A provider-native consumer selector is not a destination merely because it
+contains an address or wildcard expression. A selector such as a JetStream
+consumer filter is scoped to the relationship between its stream and consumer;
+it is stored as evidence metadata on that relationship.
+
 ### Messaging Resource
 
 A `MessagingResource` is a named, provider-managed construct that participates
@@ -258,6 +262,10 @@ Examples include a JetStream consumer, Kafka consumer group, and RabbitMQ
 consumer subscription. Runtime members of a consumer group are not separate
 consumer nodes in the initial model.
 
+Selection configuration belongs to the relationship that serves a consumer,
+not to the consumer node itself. This preserves its scope when a provider can
+associate one consumer identity with multiple resources or destinations.
+
 Some providers do not expose a durable consumer identity. In that case,
 EventAtlas may omit the consumer node and connect a service directly to a
 destination using observed evidence rather than fabricate an unstable entity.
@@ -293,8 +301,7 @@ attached separately, allowing one edge to be supported by multiple sources.
 | `publishes` | Service | Destination | Publishes messages to the target. |
 | `consumes` | Service | Destination | Processes messages from the target. |
 | `captured_by` | Destination | Resource | Is captured by the target. |
-| `has_consumer` | Resource or Destination | Consumer | Serves the consumer. |
-| `filters` | Consumer | Destination | Selects the target address or pattern. |
+| `has_consumer` | Resource or Destination | Consumer | Serves the consumer; provider selector configuration may enrich its evidence. |
 | `executed_by` | Consumer | Service | Is executed by the service. |
 | `routes_to` | Destination/Resource | Destination/Resource | Routes messages. |
 | `belongs_to` | Provider-owned node | Broker | Belongs to the broker. |
@@ -307,6 +314,12 @@ free-form edge label.
 observed application behavior at a destination. `executed_by` correlates a
 broker-side consumer identity with a logical service. Both may exist for the
 same message path.
+
+The canonical path through the graph is `Service -> Destination -> Resource ->
+Consumer -> Service`, using `publishes`, `captured_by`, `has_consumer`, and
+`executed_by`. Optional routing resources can extend the middle of that path.
+`consumes` is a supporting observed correlation and is especially useful when
+no stable broker-side consumer identity exists.
 
 ## Evidence and Observations
 
@@ -356,8 +369,10 @@ supports relationships such as:
 
 - destination `captured_by` resource;
 - resource `has_consumer` consumer;
-- consumer `filters` destination;
 - exchange `routes_to` queue.
+
+Provider-specific selectors qualify `has_consumer` evidence. They do not
+create additional declared topology edges.
 
 Declared evidence remains present while the relationship exists in successful
 authoritative snapshots for its source scope.
@@ -517,7 +532,7 @@ branch on arbitrary metadata keys when a stable domain concept is required.
 | Stream subject configuration | Destination `captured_by` resource |
 | JetStream consumer | Consumer with kind `nats.jetstream.consumer` |
 | Consumer attached to stream | Resource `has_consumer` consumer |
-| Consumer filter subject | Consumer `filters` destination |
+| Consumer filter subject | Namespaced metadata on `has_consumer` evidence |
 | Application publish | Service `publishes` destination, observed |
 | Application processing | Service `consumes` destination, observed |
 
@@ -531,7 +546,7 @@ No NATS-only entity or relationship is required in the core.
 | Topic | Destination with kind `topic` |
 | Consumer group | Consumer with kind `kafka.consumer_group` |
 | Group subscription | Destination `has_consumer` consumer |
-| Group subscription pattern | Consumer `filters` destination pattern |
+| Group subscription pattern | Namespaced metadata on `has_consumer` evidence; not a destination by itself |
 | Application produce | Service `publishes` destination, observed |
 | Application consume | Service `consumes` destination, observed |
 | Partition and replica data | Provider metadata initially |
@@ -572,8 +587,7 @@ flowchart LR
 
     orders -. publishes .-> subject
     subject -->|captured by| stream
-    stream -->|has consumer| consumer
-    consumer -->|filters| subject
+    stream -->|has consumer<br/>filter: orders.*| consumer
     consumer -. executed by .-> billing
 ```
 
