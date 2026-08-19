@@ -54,7 +54,8 @@ implementation uses Huma's `net/http` adapter and the standard library
 
 Huma owns operation registration, HTTP content negotiation, error responses,
 OpenAPI 3.1 generation, JSON Schema generation, and interactive documentation.
-Swagger UI is the selected documentation renderer. The initial routes are:
+Stoplight Elements is the selected documentation renderer. The initial routes
+are:
 
 ```text
 GET /api/v1/topology
@@ -76,7 +77,7 @@ entities when compatibility, security, or client requirements demand it.
 
 ### Positive
 
-- OpenAPI and Swagger UI stay synchronized with registered operations.
+- OpenAPI and Stoplight Elements stay synchronized with registered operations.
 - API handlers use typed inputs and outputs with less serialization plumbing.
 - The backend retains the standard `net/http` server and graceful shutdown.
 - Future request validation and generated clients can build on one contract.

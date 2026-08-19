@@ -59,7 +59,7 @@ core model remains independent of any messaging provider.
 - [ADR-0007](adrs/0007-start-with-single-backend-process.md)
   starts the backend as one process with explicit internal boundaries.
 - [ADR-0008](adrs/0008-use-huma-for-http-api.md)
-  selects Huma for the HTTP adapter, generated OpenAPI, and Swagger UI.
+  selects Huma for the HTTP adapter, generated OpenAPI, and Stoplight Elements.
 
 The initial ADR set will document the backend and frontend stacks, the
 provider-neutral model, persistence, topology evidence, OpenTelemetry's role,
