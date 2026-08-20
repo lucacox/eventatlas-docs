@@ -39,6 +39,8 @@ core model remains independent of any messaging provider.
 
 - [Domain model](architecture/domain-model.md) defines the core entities,
   relationships, evidence, snapshots, and provider boundaries.
+- [Topology persistence](architecture/persistence.md) defines source-scoped
+  PostgreSQL storage, reconciliation, and startup behavior.
 
 ### Architecture Decision Records
 
@@ -60,6 +62,8 @@ core model remains independent of any messaging provider.
   starts the backend as one process with explicit internal boundaries.
 - [ADR-0008](adrs/0008-use-huma-for-http-api.md)
   selects Huma for the HTTP adapter, generated OpenAPI, and Stoplight Elements.
+- [ADR-0009](adrs/0009-model-consumer-selectors-as-binding-metadata.md)
+  keeps provider-native consumer selectors on consumer-binding evidence.
 
 The initial ADR set will document the backend and frontend stacks, the
 provider-neutral model, persistence, topology evidence, OpenTelemetry's role,
@@ -70,7 +74,6 @@ and the single-process deployment strategy.
 Documentation will be added incrementally as the corresponding design or
 implementation work begins:
 
-- architecture overview and topology discovery;
 - telemetry and provider architecture;
 - NATS and JetStream integration;
 - OpenTelemetry integration;
@@ -90,9 +93,11 @@ describe behavior that has been agreed upon or implemented.
 
 ## Project Status
 
-EventAtlas has its first read-only backend vertical slice. APIs, schemas, and
-deployment contracts are expected to evolve while persistence and the web
-application are implemented.
+EventAtlas has an end-to-end read-only vertical slice for NATS and JetStream,
+including periodic discovery, a topology API, and an interactive web graph.
+PostgreSQL persistence is the current implementation phase. APIs, schemas, and
+deployment contracts remain expected to evolve before the first usable
+release.
 
 ## License
 
