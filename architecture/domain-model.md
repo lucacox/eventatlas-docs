@@ -140,9 +140,10 @@ A provider instance identifies one configured discovery target, such as a
 NATS cluster, Kafka cluster, or RabbitMQ virtual host. Two resources with the
 same name in different provider instances are different nodes.
 
-Services use logical service identity within an environment. Deployments,
-replicas, and versions enrich that identity but do not create separate service
-nodes by default.
+Services use logical service identity within an environment. An optional
+service namespace distinguishes services with the same name. Deployments,
+replicas, instances, and versions enrich that identity but do not create
+separate service nodes by default.
 
 Names can change and are not assumed to be globally unique. Providers should
 use durable provider identifiers when available and otherwise derive a stable
@@ -163,9 +164,11 @@ Core attributes:
 | `name` | Logical service name, normally aligned with OTel `service.name`. |
 | `environment` | Deployment environment containing the logical service. |
 
-Common enrichment attributes include service version, namespace, team, and
-deployment identifiers. Instance IDs, pod names, and process IDs are not part
-of logical service identity.
+`service.namespace`, when present, participates in logical identity together
+with the environment and name. It may remain an enrichment attribute in the
+first storage representation. Service version, deployment identifiers,
+instance IDs, pod names, and process IDs are not part of logical service
+identity.
 
 Services are normally learned from observation sources rather than broker
 configuration.
@@ -486,6 +489,13 @@ Conceptually, each fact identifies:
 Identity resolution may create previously unknown service or destination nodes.
 It must use the same topology scope and destination normalization rules as
 provider discovery to make correlation possible.
+
+Provider snapshots remain source-scoped and authoritative only for their own
+declared facts. A multi-source `TopologyView` is an application read model that
+combines current provider snapshots with active observations; it is not a
+provider snapshot and must expose every contributing evidence source. The
+observation ingestion and projection contract is defined in
+[Observation architecture](observations.md).
 
 ## Core and Provider-specific Boundaries
 

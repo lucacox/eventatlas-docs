@@ -41,6 +41,8 @@ core model remains independent of any messaging provider.
   relationships, evidence, snapshots, and provider boundaries.
 - [Topology persistence](architecture/persistence.md) defines source-scoped
   PostgreSQL storage, reconciliation, and startup behavior.
+- [Observation architecture](architecture/observations.md) defines OTLP trace
+  ingestion, normalization, retention, correlation, and merged projections.
 
 ### Architecture Decision Records
 
@@ -64,6 +66,8 @@ core model remains independent of any messaging provider.
   selects Huma for the HTTP adapter, generated OpenAPI, and Stoplight Elements.
 - [ADR-0009](adrs/0009-model-consumer-selectors-as-binding-metadata.md)
   keeps provider-native consumer selectors on consumer-binding evidence.
+- [ADR-0010](adrs/0010-ingest-observations-from-otlp-traces.md)
+  selects OTLP/HTTP traces as the first observation ingestion boundary.
 
 The initial ADR set will document the backend and frontend stacks, the
 provider-neutral model, persistence, topology evidence, OpenTelemetry's role,
@@ -74,9 +78,7 @@ and the single-process deployment strategy.
 Documentation will be added incrementally as the corresponding design or
 implementation work begins:
 
-- telemetry and provider architecture;
 - NATS and JetStream integration;
-- OpenTelemetry integration;
 - local development, testing, and contribution guides.
 
 Planned documents are not placeholders for decisions. Each document should
@@ -94,10 +96,10 @@ describe behavior that has been agreed upon or implemented.
 ## Project Status
 
 EventAtlas has an end-to-end read-only vertical slice for NATS and JetStream,
-including periodic discovery, a topology API, and an interactive web graph.
-PostgreSQL persistence is the current implementation phase. APIs, schemas, and
-deployment contracts remain expected to evolve before the first usable
-release.
+including periodic discovery, PostgreSQL persistence, a topology API, an
+interactive web graph, a complete local stack, and CI validation. OpenTelemetry
+observation ingestion is the current implementation phase. APIs, schemas, and
+deployment contracts remain expected to evolve before the first usable release.
 
 ## License
 
