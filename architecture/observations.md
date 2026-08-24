@@ -89,8 +89,9 @@ projection before adding less reliable identity mappings.
 
 The receiver exposes `POST /v1/traces` over HTTP with binary Protocol Buffers.
 It accepts the OTLP `ExportTraceServiceRequest` and returns the corresponding
-OTLP response message. Gzip request bodies may be supported, but limits apply
-after decompression.
+OTLP response message. It accepts uncompressed and gzip-compressed request
+bodies. The configured request limit applies both to bytes received on the
+wire and to bytes produced after decompression.
 
 The listener is separate from the Huma API listener:
 
@@ -109,7 +110,7 @@ The planned runtime configuration is:
 | `EVENTATLAS_OTLP_HTTP_ADDRESS` | OTLP listener address; empty disables ingestion. |
 | `EVENTATLAS_OTLP_SOURCE_ID` | Stable observation source, for example `observation:otel:local`. |
 | `EVENTATLAS_OBSERVATION_RETENTION` | Duration after `lastSeen` for which a fact remains active. |
-| `EVENTATLAS_OTLP_MAX_REQUEST_BYTES` | Maximum compressed and decompressed request size. |
+| `EVENTATLAS_OTLP_MAX_REQUEST_BYTES` | Maximum on-wire and decompressed request size. |
 
 Final defaults are implementation details, except that ingestion must remain
 opt-in outside the local Compose environment.
@@ -119,11 +120,15 @@ opt-in outside the local Compose environment.
 - A fully accepted batch returns `200` with an empty-success OTLP response.
 - A partially accepted batch returns `200` with `partial_success`, rejected
   span count, and a bounded diagnostic message.
-- Malformed Protobuf, unsupported content type, and permanently invalid
-  requests return non-retryable client errors.
+- Malformed Protobuf and gzip return `400`; unsupported content type or content
+  encoding returns `415`; an oversized body returns `413`.
 - Temporary store failures return `503`.
 - Overload and admission limits return `429` or `503`, optionally with
   `Retry-After`.
+
+Successful responses serialize `ExportTraceServiceResponse`. Error responses
+serialize `google.rpc.Status`. Both use `application/x-protobuf`; the receiver
+never returns a JSON error envelope on the OTLP endpoint.
 
 The receiver acknowledges a fact only after its durable upsert succeeds.
 
