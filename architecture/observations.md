@@ -113,8 +113,8 @@ The ingestion runtime configuration is:
 | `EVENTATLAS_OTLP_MAX_FUTURE_SKEW` | `5m` | Maximum accepted clock skew into the future. |
 
 Ingestion remains opt-in outside the local Compose environment. Observation
-retention becomes runtime configuration when the merged projector replaces the
-declared-only API read path; its current application-level default is 24 hours.
+retention is configured through `EVENTATLAS_OBSERVATION_RETENTION` and defaults
+to 24 hours.
 
 ### Response Behavior
 
@@ -339,10 +339,29 @@ key and adds `Service -> publishes -> Destination` edges with evidence mode
 `observed` and source system `opentelemetry`. Declared edges keep their original
 evidence. No observation changes snapshot reconciliation.
 
-The public API will expose the merged view rather than pretending it is a
-single-source provider snapshot. The project is pre-release, so the response
-contract may evolve before implementation. The backend and web app must change
-together and retain evidence provenance for every edge.
+The public API exposes the merged view rather than pretending it is a
+single-source provider snapshot. Its top-level contract is:
+
+```text
+view
+  generatedAt
+  scope
+  sources[]
+    sourceId
+    mode
+    latestAt
+  diagnostics
+    unresolvedObservations
+    ambiguousObservations
+nodes[]
+edges[]
+  evidence[]
+```
+
+The backend and web app consume this contract together and retain evidence
+provenance for every edge. The declared snapshot remains an internal
+authoritative input to reconciliation; its identifier is not presented as the
+identity of the merged result.
 
 ## Failure Semantics
 
@@ -352,7 +371,9 @@ together and retain evidence provenance for every edge.
   returns a retryable failure.
 - Invalid spans are reported through partial success and do not block valid
   spans in the same request.
-- Projection failure leaves the last successfully generated view available.
+- Projection or declared-store read failure leaves the last successfully
+  generated in-process view available. Before the first successful projection,
+  the API returns an error instead of fabricating an empty view.
 - Missing telemetry never produces absence-based deletion of declared state.
 
 ## Operational Signals
