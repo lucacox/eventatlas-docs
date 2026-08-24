@@ -103,17 +103,18 @@ The listener is separate from the Huma API listener:
 | Request profile | Read-oriented | Batched write-oriented |
 | Documentation | OpenAPI and Stoplight | OTLP specification |
 
-The planned runtime configuration is:
+The ingestion runtime configuration is:
 
-| Variable | Meaning |
-| --- | --- |
-| `EVENTATLAS_OTLP_HTTP_ADDRESS` | OTLP listener address; empty disables ingestion. |
-| `EVENTATLAS_OTLP_SOURCE_ID` | Stable observation source, for example `observation:otel:local`. |
-| `EVENTATLAS_OBSERVATION_RETENTION` | Duration after `lastSeen` for which a fact remains active. |
-| `EVENTATLAS_OTLP_MAX_REQUEST_BYTES` | Maximum on-wire and decompressed request size. |
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `EVENTATLAS_OTLP_HTTP_ADDRESS` | empty | OTLP listener address; empty disables ingestion. |
+| `EVENTATLAS_OTLP_SOURCE_ID` | `observation:otel:default` | Stable observation source. |
+| `EVENTATLAS_OTLP_MAX_REQUEST_BYTES` | `67108864` | Maximum on-wire and decompressed request size. |
+| `EVENTATLAS_OTLP_MAX_FUTURE_SKEW` | `5m` | Maximum accepted clock skew into the future. |
 
-Final defaults are implementation details, except that ingestion must remain
-opt-in outside the local Compose environment.
+Ingestion remains opt-in outside the local Compose environment. Observation
+retention becomes runtime configuration when the merged projector replaces the
+declared-only API read path; its current application-level default is 24 hours.
 
 ### Response Behavior
 
