@@ -154,15 +154,28 @@ authoritatively assign a provider-owned destination ID. Resolution happens
 while building the merged topology view.
 
 `metadata` is an allow-listed, low-cardinality map. The first slice may retain
-the semantic-convention version, instrumentation scope, and whether the
-environment came from the resource or configured fallback. It must not become
-a copy of arbitrary OTLP attributes.
+the resource and scope schema URLs, instrumentation scope name and version,
+and whether the environment came from the resource or configured fallback. It
+must not become a copy of arbitrary OTLP attributes.
 
 ## Span Eligibility and Mapping
 
 One OTLP request contains resource spans, instrumentation scopes, and spans.
 Each span is evaluated independently so one invalid span does not reject an
 otherwise useful batch.
+
+Normalization classifies every span into one of three bounded outcomes:
+
+| Outcome | Meaning | OTLP partial success |
+| --- | --- | --- |
+| `accepted` | A valid `send` span produced one observation fact. | Not rejected. |
+| `ignored` | The span is outside the publishing slice, such as HTTP, database, `receive`, or `process`. | Not rejected. |
+| `rejected` | The span claimed to be a messaging `send` operation but its required identity, destination, or timestamp was invalid. | Increments `rejected_spans`. |
+
+This distinction is important because a normal trace export contains many
+span kinds. EventAtlas must not report unrelated telemetry as invalid. A
+request cancellation discards any partially normalized in-memory result. The
+accepted facts from a completed request form one atomic persistence batch.
 
 ### Service identity
 
@@ -202,7 +215,8 @@ both `create` and `send` spans.
 `messaging.destination.template`, when present, is the preferred
 low-cardinality logical hint. Values are trimmed, length-bounded, and validated
 before storage. Temporary or anonymous destinations are rejected in the first
-slice.
+slice. For NATS, subjects under `_INBOX.` are treated as temporary reply
+destinations and rejected.
 
 The OpenTelemetry registry currently has no NATS-specific convention. The
 adapter accepts the custom `messaging.system=nats` value for the initial NATS
