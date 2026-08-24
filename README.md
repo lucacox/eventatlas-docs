@@ -44,6 +44,12 @@ core model remains independent of any messaging provider.
 - [Observation architecture](architecture/observations.md) defines OTLP trace
   ingestion, normalization, retention, correlation, and merged projections.
 
+### Guides
+
+- [Instrument NATS publishers for EventAtlas](guides/opentelemetry-publisher-examples.md)
+  provides runnable Go and TypeScript services that publish real NATS messages
+  and export matching OpenTelemetry spans.
+
 ### Architecture Decision Records
 
 - [ADR template](adrs/adr_template.md) defines the format used to record

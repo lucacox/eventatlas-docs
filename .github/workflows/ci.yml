@@ -1,0 +1,66 @@
+name: Documentation CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  examples:
+    name: Build runnable examples
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: examples/otel-go-publisher/go.mod
+          cache-dependency-path: examples/otel-go-publisher/go.sum
+
+      - name: Download Go dependencies
+        working-directory: examples/otel-go-publisher
+        run: go mod download
+
+      - name: Test Go example
+        working-directory: examples/otel-go-publisher
+        run: go test ./...
+
+      - name: Vet Go example
+        working-directory: examples/otel-go-publisher
+        run: go vet ./...
+
+      - name: Build Go example
+        working-directory: examples/otel-go-publisher
+        run: go build -o /tmp/otel-go-publisher .
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: examples/otel-typescript-publisher/package-lock.json
+
+      - name: Install TypeScript dependencies
+        working-directory: examples/otel-typescript-publisher
+        run: npm ci
+
+      - name: Type-check TypeScript example
+        working-directory: examples/otel-typescript-publisher
+        run: npm run check
+
+      - name: Build TypeScript example
+        working-directory: examples/otel-typescript-publisher
+        run: npm run build
