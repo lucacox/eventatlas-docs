@@ -20,16 +20,18 @@ post_date: 2026-08-20
 ## Purpose
 
 EventAtlas persists the latest successfully reconciled topology for each
-discovery source and scope. Persistence lets the API restore a useful topology
-after a process restart and continue serving the last known state while a
-provider is temporarily unavailable.
+discovery source and scope. It also persists runtime observation aggregates in
+a separate relational boundary. Persistence lets the API restore declared
+topology after a process restart and lets recent observations retain their
+time range and approximate count across restarts.
 
-PostgreSQL is an adapter behind the application-owned topology store port. SQL
-types, migration state, and database lifecycle do not enter the topology core.
+PostgreSQL adapters sit behind the application-owned topology and observation
+store ports. SQL types, migration state, and database lifecycle do not enter
+the topology or observation cores.
 
 ## Current Boundary
 
-The first durable slice stores one current, declared topology per pair:
+The declared boundary stores one current topology per pair:
 
 ```text
 sourceId + discovery scope
@@ -40,12 +42,22 @@ An EventAtlas process currently exposes one configured pair through
 versions can retain several provider and observation sources without changing
 their identities.
 
-This phase deliberately does not implement:
+The observation boundary stores one aggregate per identity defined in
+[Observation architecture](observations.md):
+
+```text
+source + scope + relationship + service key + destination hint
+```
+
+Snapshot replacement never modifies observation aggregates. Observation
+upserts never modify provider-owned snapshot rows.
+
+The current runtime still does not implement:
 
 - historical topology browsing;
 - retention policies for raw snapshots;
-- a merged projection across multiple discovery and observation sources;
 - OpenTelemetry ingestion;
+- API exposure of the merged topology view;
 - PostgreSQL-specific query endpoints.
 
 ## Reconciliation Semantics
@@ -91,6 +103,12 @@ Readers see either the previous complete topology or the new complete
 topology. They never observe a partially written graph. A failed transaction
 leaves the previous snapshot available.
 
+An observation batch is also one PostgreSQL transaction. Every normalized fact
+is validated before the transaction begins. Each fact then inserts or updates
+its aggregate, retaining the earliest `firstSeen`, latest `lastSeen`, metadata
+associated with the latest observation, and a saturating approximate count. A
+failure rolls back the complete batch.
+
 ## Relational Model
 
 The initial schema contains:
@@ -101,6 +119,7 @@ The initial schema contains:
 | `topology_nodes` | Stable node identity, core kind-specific columns, display name, and provider attributes. |
 | `topology_edges` | Directed typed relationship and deterministic position in the snapshot. |
 | `topology_edge_evidence` | Evidence source, mode, source system, time range, metadata, and deterministic position. |
+| `topology_observations` | Runtime fact identity, earliest and latest observation times, approximate count, and allow-listed metadata. |
 | `eventatlas_schema_migrations` | Applied versioned database migrations. |
 
 Core identity and relationship fields use typed relational columns.
@@ -113,6 +132,8 @@ Foreign keys and checks enforce:
 - node and edge kinds recognized by the current schema;
 - edge endpoints belonging to the same source-scoped snapshot;
 - evidence time ranges where `lastSeen >= firstSeen`;
+- observation identity fields and time ranges where `lastSeen >= firstSeen`;
+- positive observation counts;
 - JSON object and array shapes;
 - cascading cleanup when a source-scoped snapshot is replaced.
 
@@ -152,3 +173,4 @@ The persistence slice is complete when:
 - [Domain model](domain-model.md)
 - [ADR-0004: Use PostgreSQL](../adrs/0004-use-postgresql-for-persistence.md)
 - [ADR-0005: Separate declared and observed topology](../adrs/0005-separate-declared-and-observed-topology.md)
+- [Observation architecture](observations.md)
